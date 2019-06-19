@@ -24,6 +24,7 @@ public class SsxyVo {
     private String retCd;
     private String retCdRemark;
     private String status;
+    private String protActType;
     private String createTime;
 
    public String getTypeMsg(){

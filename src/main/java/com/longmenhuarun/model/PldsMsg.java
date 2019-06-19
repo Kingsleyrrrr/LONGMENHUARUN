@@ -38,9 +38,9 @@ public class PldsMsg {
 	private String customLength = "0";//变长定制信息长度
 	private String customContent = "";//变长定制信息
 
-	private List<CfbsPlMsgDetail> details = new ArrayList<CfbsPlMsgDetail>();
+	private List<PldsMsgDetail> details = new ArrayList<>();
 	@Data
-	public class CfbsPlMsgDetail {
+	public class PldsMsgDetail {
 
 		private String txnSeq;//交易序号
 		private String entrustDate;//委托日期
@@ -149,7 +149,7 @@ public class PldsMsg {
 		/* 2、逐行读取文件，并解析文件体 */
 		while ((temp = breader.readLine()) != null) {
 			
-			CfbsPlMsgDetail detail = pldsMsg.new CfbsPlMsgDetail();
+			PldsMsgDetail detail = pldsMsg.new PldsMsgDetail();
 			
 			beginIndex = 0;
 			
@@ -258,7 +258,7 @@ public class PldsMsg {
 		cfbsFileWriter.write(chrLineEnd);
 
 		//文件体
-		for(CfbsPlMsgDetail detail : msg.getDetails()) {
+		for(PldsMsgDetail detail : msg.getDetails()) {
 			cfbsFileWriter.write(CFBSMsgUtil.leftFill(CFBSConstant.FILL_WORD_ZERO, 16, detail.getTxnSeq()));// 交易序号
 			cfbsFileWriter.write(detail.getEntrustDate());// 委托日期
 			cfbsFileWriter.write(CFBSMsgUtil.leftFill(CFBSConstant.FILL_WORD_ZERO, 8, "0"));// 清算日期 00000000

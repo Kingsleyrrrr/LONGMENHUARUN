@@ -3,6 +3,7 @@ package com.longmenhuarun.Controller;
 import cfbs.model.CfbsSsdfMsg;
 import com.longmenhuarun.Service.PldsService;
 import com.longmenhuarun.common.TimeUtil;
+import com.longmenhuarun.model.PldsMsg;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,17 +49,18 @@ public class PldsController {
             file.transferTo(new File(filepath+filename));
 
         //解析
-        pldsService.anaCustomFile(filepath,filename);
-        //生成明文文件 密文文件
+        PldsMsg pldsMsg=pldsService.anaCustomFile(filepath,filename);
 
+        //生成明文文件 密文文件
+        String encFile=pldsService.genReqPldsFile(pldsMsg);
         //发送
-        boolean flag =true;
-                //ssdsService.sendSsdsMsg(ssReqMsg);
+        boolean flag = pldsService.sendFile(encFile);
         if (!flag) {
             map.put("Msg", "发送失败！！");
         } else {
             map.put("Msg", "发送成功！！");
             //入库
+
         }
         return new ModelAndView("/plds/invoke", map);
     }

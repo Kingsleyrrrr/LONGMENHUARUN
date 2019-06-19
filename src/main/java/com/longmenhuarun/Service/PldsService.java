@@ -9,4 +9,10 @@ import org.springframework.data.domain.Pageable;
 
 public interface PldsService {
    PldsMsg anaCustomFile(String filepath,String filename);
+
+    String genReqPldsFile(PldsMsg pldsMsg);
+
+    boolean sendFile(String encFileName);
+
+    PldsMsg anaRespPldsFile(String name);
 }

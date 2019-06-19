@@ -22,26 +22,20 @@
                     <table class="table table-bordered table-condensed">
                         <thead>
                         <tr>
-                            <th>交易序号</th>
-                            <th>委托日期</th>
-                            <th>清算日期</th>
-                            <th>业务种类</th>
-                            <th>用户号</th>
-                            <th>付款行号</th>
-                            <th>分支行号</th>
-                            <th>付款人账号</th>
-                            <th>付款户名</th>
-                            <th>币种</th>
-                            <th>金额</th>
-                            <th>手续费</th>
-                            <th>附言</th>
-                            <th>流水号</th>
-                            <th>返回码</th>
-                            <th>返回信息</th>
-                            <th>交易状态</th>
-                            <th>到账状态</th>
-                            <th>到账时间</th>
-                            <th>创建时间</th>
+                            <th>客户发起文件名</th>
+                            <th>客户回应文件名</th>
+                            <th>发起文件名</th>
+                            <th>回应文件名</th>
+                            <th>批量包序号</th>
+                            <th>发起日期</th>
+                            <th>回应日期</th>
+                            <th>总笔数</th>
+                            <th>总金额</th>
+                            <th>成功笔数</th>
+                            <th>成功金额</th>
+                            <th>失败笔数</th>
+                            <th>失败金额</th>
+                            <th>状态</th>
                         </tr>
                         </thead>
                         <tbody>

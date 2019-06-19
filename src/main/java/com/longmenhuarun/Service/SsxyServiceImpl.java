@@ -137,6 +137,7 @@ public class SsxyServiceImpl implements SsxyService {
             SsxyVo ssxyVo = new SsxyVo();
             BeanUtils.copyProperties(uiSsxy, ssxyVo);
             ssxyVo.setCreateTime(uiSsxy.getCreateDate()+uiSsxy.getCreateTime());
+            if("100".equals(ssxyVo.getProtActType()))
             SsxyVoList.add(ssxyVo);
         }
         return new PageImpl<SsxyVo>(SsxyVoList, pageable, UiSsxyPage.getTotalElements());

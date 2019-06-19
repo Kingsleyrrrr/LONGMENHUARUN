@@ -123,4 +123,30 @@
     </div>
 </div>
 </body>
+<script>
+    var websocket=null;
+    if('WebSocket'in window){
+        websocket =new WebSocket('ws://127.0.0.1:8888/webSocket');
+    }else{
+        alert('该浏览器不支持');
+    }
+    websocket.onopen=function (event) {
+        console.log("建立连接");
+    }
+    websocket.onclose=function (event) {
+        console.log("连接关闭");
+    }
+    websocket.onmessage=function (event) {
+        //弹窗
+        var body = document.getElementById("noticebody");
+        body.innerText="请求"+event.data+"已有回应，请前往查看";
+        $("#notice").modal("show");
+    }
+    websocket.onerror=function (event) {
+        console.log("通信错误");
+    }
+    websocket.onbeforeunload=function (event) {
+        websocket.close();
+    }
+</script>
 </html>

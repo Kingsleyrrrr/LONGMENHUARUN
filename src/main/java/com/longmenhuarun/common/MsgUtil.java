@@ -11,4 +11,12 @@ public class MsgUtil {
         }
         return TimeUtil.getCurDateStr()+Integer.toString(hashCodeV).substring(0,8);
     }
+    public static String getPlpackNo() {
+
+        int hashCodeV = UUID.randomUUID().toString().hashCode();
+        if (hashCodeV < 0) {//有可能是负数
+            hashCodeV = -hashCodeV;
+        }
+        return Integer.toString(hashCodeV).substring(0,8);
+    }
 }
