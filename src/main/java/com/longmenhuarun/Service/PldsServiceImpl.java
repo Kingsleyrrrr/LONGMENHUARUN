@@ -7,11 +7,18 @@ import com.longmenhuarun.common.FtpUtil;
 import com.longmenhuarun.common.MsgUtil;
 import com.longmenhuarun.common.TimeUtil;
 import com.longmenhuarun.entity.BatchLog;
+import com.longmenhuarun.entity.TxnPlds;
+import com.longmenhuarun.entity.TxnSsxy;
+import com.longmenhuarun.entity.UiPlds;
 import com.longmenhuarun.enums.JYStatusEnum;
 import com.longmenhuarun.model.PldsMsg;
 import com.longmenhuarun.repository.BatchLogRepository;
+import com.longmenhuarun.repository.TxnPldsRepository;
+import com.longmenhuarun.repository.TxnSsxyRepository;
+import com.longmenhuarun.repository.UiPldsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ftp.FTPClient;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -32,6 +39,10 @@ import java.sql.Time;
   public class PldsServiceImpl implements PldsService {
     @Autowired
     BatchLogRepository batchLogRepo;
+    @Autowired
+    UiPldsRepository uiPldsRepo;
+    @Autowired
+    TxnPldsRepository txnPldsRepo;
     @Value("${LOCALSEND_FILE_PATH}")
     private String LOCALSEND_FILE_PATH;
     @Value("${LOCALRECV_FILE_PATH}")
@@ -157,7 +168,34 @@ import java.sql.Time;
         batchLog.setCreateTime(TimeUtil.getCurTimeStr());
         batchLogRepo.save(batchLog);
         //ui_plds
+        for (PldsMsg.PldsMsgDetail details:pldsMsg.getDetails()) {
+            UiPlds uiPlds = new UiPlds();
+            uiPlds.setMsgId(details.getTxnSeq());
+            uiPlds.setBatchMsgId(batchLog.getMsgId());
+            uiPlds.setTxnType(pldsMsg.getTxnType());
+            uiPlds.setOrigBank(pldsMsg.getOrigBank());
+            uiPlds.setOrigAcc(pldsMsg.getOrigAcc());
+            uiPlds.setOutBank(pldsMsg.getOutBank());
+            uiPlds.setPayerAcc(details.getPayerAcc());
+            uiPlds.setPayerName(details.getPayerName());
+            uiPlds.setTranType(pldsMsg.getTranType());
+            uiPlds.setProtNo(details.getContractId());
+            uiPlds.setCurrency(pldsMsg.getCurrency());
+            uiPlds.setAmount(details.getAmount());
+            uiPlds.setCharge(details.getCharge());
+            uiPlds.setRemark(details.getRemark());
+            uiPlds.setStatus(JYStatusEnum.ANSWER.getCode());
+            uiPlds.setCreateDate(TimeUtil.getCurDateStr());
+            uiPlds.setCreateTime(TimeUtil.getCurTimeStr());
+            uiPldsRepo.save(uiPlds);
+            //txn_plds
+            TxnPlds txnPlds=new TxnPlds();
+            BeanUtils.copyProperties(uiPlds,txnPlds);
+            txnPlds.setMsgId(MsgUtil.getReqMsgNo());
+            txnPlds.setReqMsgId(uiPlds.getMsgId());
+            txnPlds.setEntrustDate(TimeUtil.getCurDateStr());
+            txnPldsRepo.save(txnPlds);
+        }
 
-        //txn_plds
     }
 }
