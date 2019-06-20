@@ -73,6 +73,11 @@ public class SsxyServiceImpl implements SsxyService {
         uiSsxy.setCreateDate(TimeUtil.getCurDateStr());
         uiSsxy.setCreateTime(TimeUtil.getCurTimeStr());
         uiSsxy.setStatus(JYStatusEnum.ANSWER.getCode());
+        if("100".equals(uiSsxy.getProtActType())){
+            uiSsxy.setProtActType("ADD");
+        }else if("102".equals(uiSsxy.getProtActType())){
+            uiSsxy.setProtActType("DEL");
+        }
         uiSsxyRepo.save(uiSsxy);
         //txn表
         TxnSsxy txnSsxy=new TxnSsxy();

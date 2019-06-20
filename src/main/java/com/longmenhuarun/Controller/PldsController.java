@@ -23,7 +23,7 @@ import java.util.Map;
 public class PldsController {
 
     @Value("${LOCAL_FILE_PATH}")
-    private String localpath;
+    private String LOCAL_FILE_PATH;
     @Autowired
     PldsService pldsService;
     @GetMapping(value = "/list")
@@ -45,12 +45,11 @@ public class PldsController {
         }
             //转存文件
             String filename=file.getOriginalFilename();
-            String filepath = localpath;
+            String filepath = LOCAL_FILE_PATH;
             file.transferTo(new File(filepath+filename));
 
         //解析
         PldsMsg pldsMsg=pldsService.anaCustomFile(filepath,filename);
-
         //生成明文文件 密文文件
         String encFile=pldsService.genReqPldsFile(pldsMsg);
         //发送
@@ -60,7 +59,7 @@ public class PldsController {
         } else {
             map.put("Msg", "发送成功！！");
             //入库
-
+           pldsService.insertDB(pldsMsg,filename);
         }
         return new ModelAndView("/plds/invoke", map);
     }

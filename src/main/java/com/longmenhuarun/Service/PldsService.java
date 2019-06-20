@@ -15,4 +15,6 @@ public interface PldsService {
     boolean sendFile(String encFileName);
 
     PldsMsg anaRespPldsFile(String name);
+
+    void insertDB(PldsMsg pldsMsg,String batchId);
 }

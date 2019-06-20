@@ -25,5 +25,6 @@ public class Constant {
         bankMap.put("B102", "103581099992");
         bankMap.put("B103", "105581000018");
         bankMap.put("B104", "104581003017");
+        bankMap.put("TEST", "201581000018");
     }
 }
