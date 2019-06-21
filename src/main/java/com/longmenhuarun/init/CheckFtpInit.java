@@ -2,6 +2,7 @@ package com.longmenhuarun.init;
 
 import com.longmenhuarun.Service.PldsService;
 import com.longmenhuarun.common.FtpUtil;
+import com.longmenhuarun.model.PldsMsg;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -60,8 +61,11 @@ public class CheckFtpInit {
                                     if(isDownload) {
 
                                        log.info("收到代收付回应密文文件！[" + file.getName() + "]");
-                                        pldsService.anaRespPldsFile(file.getName());
+                                       PldsMsg pldsMsg= pldsService.anaRespPldsFile(file.getName());
                                         //更新数据库
+                                        pldsService.updateDB(pldsMsg);
+                                        //生成文件
+                                        pldsService.genCustomFile(pldsMsg,pldsMsg.getRefFileName());
                                         //处理成功后删除FTP文件，以免重复处理
                                         ftpClient.deleteFile(file.getName());
                                     }

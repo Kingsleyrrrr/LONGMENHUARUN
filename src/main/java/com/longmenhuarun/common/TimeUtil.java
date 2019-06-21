@@ -11,7 +11,7 @@ public class TimeUtil {
 	/**
 	 * 格式为:yyyyMMddHHmmss
 	 */
-	public static final String DATE_FORMAT_yyyyMMddHHmmss = "yyyyMMddHHmmss";
+	public static final String DATE_FORMAT_yyyyMMddHHmm = "yyyyMMddHHmm";
 	/**
 	 * 格式为:yyyy-MM-dd HH:mm:ss
 	 */
@@ -247,5 +247,12 @@ public class TimeUtil {
     	
     	return dateFormat(new Date(), DATE_FORMAT_yyyyMM);
     }
-    
+	/**
+	 * 返回当前年月日时间
+	 * @return yyyyMMddHHmm
+	 */
+	public static String getCurDateTimeStr() {
+
+		return dateFormat(new Date(), DATE_FORMAT_yyyyMMddHHmm);
+	}
 }

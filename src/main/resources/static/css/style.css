@@ -33,11 +33,11 @@ html {
 }
 
 #wrapper.toggled {
-    padding-left: 180px;
+    padding-left: 150px;
 }
 
 #wrapper.toggled #sidebar-wrapper {
-    width: 180px;
+    width: 150px;
 }
 
 #sidebar-wrapper {

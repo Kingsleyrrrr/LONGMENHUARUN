@@ -10,4 +10,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * 4
  */
 public interface TxnPldsRepository extends JpaRepository<TxnPlds,String> {
+    TxnPlds findByReqMsgId(String msgId);
 }

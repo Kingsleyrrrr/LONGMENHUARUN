@@ -16,6 +16,8 @@ public class BatchLog {
     @Id
     private String msgId;
     private String batchId;
+    private String sendfileName;
+    private String rspfileName;
     private String orgId;
     private String totCnt;
     private String totAmt;

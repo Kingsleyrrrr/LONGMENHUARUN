@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +66,7 @@ public class SsxyServiceImpl implements SsxyService {
     }
 
     @Override
+    @Transactional
     public void insertDB(String ssReqMsg) {
         SsxyMsg ssxyMsg= SsxyMsg.fromMsg(ssReqMsg);
         UiSsxy uiSsxy=new UiSsxy();
@@ -88,6 +90,7 @@ public class SsxyServiceImpl implements SsxyService {
         txnSsxyRepo.save(txnSsxy);
     }
     @Override
+    @Transactional
     public void updateDB(String ssResMsg) {
         SsxyMsg ssxyMsg=SsxyMsg.fromMsg(ssResMsg);
         //查出txn表

@@ -13,14 +13,15 @@ import javax.persistence.Id;
 @Entity
 @Data
 public class TxnPlds {
-    @Id
     private String msgId;
+    @Id
     private String reqMsgId;
     private String batchMsgId;
     private String txnDate;
     private String entrustDate;
     private String userNo;
     private String orgId;
+    private String outAccBank;
     private String txnType;
     private String origBank;
     private String origAcc;

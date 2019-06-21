@@ -10,4 +10,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * 4
  */
 public interface UiPldsRepository extends JpaRepository<UiPlds,String> {
+    UiPlds findByMsgId(String msgId);
 }

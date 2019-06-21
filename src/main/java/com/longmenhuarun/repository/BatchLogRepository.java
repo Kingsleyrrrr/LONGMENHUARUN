@@ -9,4 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * 4
  */
 public interface BatchLogRepository extends JpaRepository<BatchLog,String> {
+    BatchLog  findBySendfileName(String filename);
 }

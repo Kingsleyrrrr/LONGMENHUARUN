@@ -40,5 +40,4 @@ public class UiPlds {
     private String createTime;
     private String rspDate;
     private String rspTime;
-    private String source="ORG";
 }

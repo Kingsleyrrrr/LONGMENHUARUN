@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ public class SsdsServiceImpl implements SsdsService {
     }
 
     @Override
+    @Transactional
     public void insertDB(String ssReqMsg) {
         SsdsMsg ssdsMsg= SsdsMsg.fromMsg(ssReqMsg);
         UiSsds uiSsds=new UiSsds();
@@ -81,6 +83,7 @@ public class SsdsServiceImpl implements SsdsService {
     }
 
     @Override
+    @Transactional
     public void updateDB(String ssResMsg) {
         SsdsMsg ssdsMsg=SsdsMsg.fromMsg(ssResMsg);
         //查出txn表
