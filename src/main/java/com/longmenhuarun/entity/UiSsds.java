@@ -36,5 +36,4 @@ public class UiSsds {
     private String createDate;
     private String createTime;
     private String protNo;
-
 }

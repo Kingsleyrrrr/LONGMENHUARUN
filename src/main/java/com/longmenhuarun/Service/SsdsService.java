@@ -12,4 +12,8 @@ public interface SsdsService {
     void insertDB(String ssReqMsg);
     void updateDB(String ssResMsg);
     Page<SsdsVo> findSsdsList(Pageable pageable);
+
+    void dz(String filename);
+
+    boolean checkProtocol(String ssReqMsg);
 }

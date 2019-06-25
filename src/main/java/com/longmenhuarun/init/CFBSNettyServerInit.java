@@ -46,11 +46,12 @@ public class CFBSNettyServerInit {
 							try {
 
 					    		String unpackMsg = CFBSMsgUtil.unpackCfbsRspMsg(msg);
-								log.info("回应报文["+unpackMsg+"]");
 								if(unpackMsg.startsWith(TXNTYPE_SSDS)) {//实时代收
+									log.info("收到实时代收回应报文["+unpackMsg+"]");
 									ssdsService.updateDB(unpackMsg);
 								}
 								else if(unpackMsg.startsWith(TXNTYPE_SSXY)){
+									log.info("收到实时协议回应报文["+unpackMsg+"]");
 									ssxyService.updateDB(unpackMsg);
 								}
 					    	} catch(Exception e) {

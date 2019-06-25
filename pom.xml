@@ -8,9 +8,9 @@
         <version>2.1.3.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.cfbs</groupId>
-    <artifactId>longmenhuarun</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <groupId>com.yjt</groupId>
+    <artifactId>lmhr</artifactId>
+    <version>0.0.3</version>
     <name>LONGMENHUARUN</name>
     <description>Demo project for Spring Boot</description>
 

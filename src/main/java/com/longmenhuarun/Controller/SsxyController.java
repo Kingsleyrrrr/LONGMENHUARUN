@@ -3,6 +3,7 @@ package com.longmenhuarun.Controller;
 import com.longmenhuarun.Service.SsxyService;
 import com.longmenhuarun.Vo.SsdsVo;
 import com.longmenhuarun.Vo.SsxyVo;
+import com.longmenhuarun.common.MsgUtil;
 import com.longmenhuarun.model.SsxyMsg;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,15 +54,19 @@ public class SsxyController {
             map.put("Msg", bindingResult.getFieldError().getDefaultMessage());
             return new ModelAndView("/ssxy/create", map);
         }
+        //分配一个id
+        String ReqMsgNo= MsgUtil.getReqMsgNo();
+        ssxyMsg.setReqMsgNo(ReqMsgNo);
+        log.info("收到机构实时协议请求[" + ssxyMsg + "]");
         //创建报文
         String ssReqMsg = ssxyService.createSsxyMsg(ssxyMsg);
-        log.info("发送报文[" + ssReqMsg + "]");
         //加密并发送报文
         boolean flag = ssxyService.sendSsxyMsg(ssReqMsg);
         if (!flag) {
             map.put("Msg", "发送失败！！");
         } else {
             map.put("Msg", "发送成功！！");
+            log.info("发送实时协议报文[" + ssReqMsg + "]");
             //入库
             ssxyService.insertDB(ssReqMsg);
         }
@@ -70,9 +75,10 @@ public class SsxyController {
     @GetMapping("/cancel")
     public ModelAndView cancel(@RequestParam String msgId,
                               RedirectAttributes attributes) {
+        log.info("收到机构撤销协议请求[" + msgId + "]");
         //创建报文
         String ssReqMsg = ssxyService.cancelSsxyMsg(msgId);
-        log.info("发送报文[" + ssReqMsg + "]");
+        log.info("发送撤销协议报文[" + ssReqMsg + "]");
         boolean flag = ssxyService.sendSsxyMsg(ssReqMsg);
         if (!flag) {
             attributes.addFlashAttribute("Msg", "发送失败！！");

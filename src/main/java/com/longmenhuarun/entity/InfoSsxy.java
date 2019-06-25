@@ -12,7 +12,7 @@ import javax.persistence.Id;
  */
 @Entity
 @Data
-public class TxnSsxy {
+public class InfoSsxy {
     @Id
     private String msgId;
     private String reqMsgId;

@@ -54,7 +54,7 @@
                                 <td>${ssdsVo.payerName}</td>
                                 <td>${ssdsVo.currency}</td>
                                 <td>${ssdsVo.amount}</td>
-                                <td>${ssdsVo.remark}</td>
+                                <td>${ssdsVo.remark!""}</td>
                                 <td>${ssdsVo.workReturnNo!""}</td>
                                 <td>${ssdsVo.retCd}</td>
                                 <td>${ssdsVo.retCdRemark!""}</td>
@@ -122,9 +122,9 @@
     <script>
         var websocket=null;
         if('WebSocket'in window){
-            websocket =new WebSocket('ws://127.0.0.1:8888/webSocket');
+            websocket =new WebSocket('ws://localhost:8080/webSocket');
         }else{
-            alert('该浏览器不支持');
+            alert('该浏览器不支持Websocket');
         }
         websocket.onopen=function (event) {
             console.log("建立连接");

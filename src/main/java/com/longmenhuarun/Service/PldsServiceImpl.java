@@ -3,7 +3,6 @@ package com.longmenhuarun.Service;
 import cfbs.api.CFBSConstant;
 import cfbs.api.CFBSMsgUtil;
 import com.longmenhuarun.Vo.PldsVo;
-import com.longmenhuarun.Vo.SsdsVo;
 import com.longmenhuarun.common.Constant;
 import com.longmenhuarun.common.FtpUtil;
 import com.longmenhuarun.common.MsgUtil;
@@ -19,13 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -154,7 +151,7 @@ import java.util.Map;
         try {
             //解密
             String decFileName = CFBSMsgUtil.fileDec(LOCALRECV_FILE_PATH, respEncFileName);
-            log.info("生成回应明文文件"+decFileName);
+            log.info("生成批量回应明文文件"+decFileName);
             //组装对象
            PldsMsg pldsMsg =  PldsMsg.procRespPldsFile(LOCALRECV_FILE_PATH, decFileName);
            return pldsMsg;
@@ -267,38 +264,39 @@ import java.util.Map;
     @Override
     public void genCustomFile(PldsMsg pldsMsg , String refFileName) {
         String batchId=batchLogRepo.findBySendfileName(refFileName).getBatchId();
+        String customFileName=LOCAL_FILE_PATH +"RSP"+batchId.substring(3,7)+TimeUtil.getCurDateTimeStr()+".txt";
         char[] chrLineEnd = new char[2];
         chrLineEnd[0] = 0x0d;
         chrLineEnd[1] = 0x0a;
         //读原来的
         try {
         BufferedReader breader = new BufferedReader(new InputStreamReader(new FileInputStream(LOCAL_FILE_PATH + batchId), "UTF-8"));
-        PrintWriter rspFileWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(LOCAL_FILE_PATH +"RSP"+batchId.substring(3,7)+TimeUtil.getCurDateTimeStr()), "UTF-8"));
+        PrintWriter rspFileWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(customFileName), "UTF-8"));
         String temp = breader.readLine();
         String[] head = temp.split("\\|", -1);
             head[2]=String.valueOf(Integer.parseInt(pldsMsg.getTotalCount())-Integer.parseInt(pldsMsg.getFailCount()));
             head[3]=String.valueOf(Integer.parseInt(pldsMsg.getTotalAmount())-Integer.parseInt(pldsMsg.getFailAmount()));;
             head[4]=String.valueOf(Integer.parseInt(pldsMsg.getFailCount()));
             for(int i=0;i<head.length-1;i++) {
-                rspFileWriter.write(head[0]);
+                rspFileWriter.write(head[i]);
                 rspFileWriter.write("|");
             }
             rspFileWriter.write(String.valueOf(Integer.parseInt(pldsMsg.getFailAmount())));
             rspFileWriter.write(chrLineEnd);
         while ( (temp=breader.readLine()) !=null) {
           String [] details = temp.split("\\|", -1);
+            TxnPlds txnPlds=txnPldsRepo.findByReqMsgId(details[0]);
+          details[11]=txnPlds.getRetCd();
             for(String pen:details) {
                 rspFileWriter.write(pen);
                 rspFileWriter.write("|");
             }
-            TxnPlds txnPlds=txnPldsRepo.findByReqMsgId(details[0]);
-            rspFileWriter.write(txnPlds.getRetCd());
-            rspFileWriter.write("|");
             rspFileWriter.write(txnPlds.getRetCdRemark());;
             rspFileWriter.write(chrLineEnd);
         }
             rspFileWriter.flush();
              rspFileWriter.close();
+             log.info("生成客户化回应文件"+customFileName);
     } catch (IOException e) {
         e.printStackTrace();
     }

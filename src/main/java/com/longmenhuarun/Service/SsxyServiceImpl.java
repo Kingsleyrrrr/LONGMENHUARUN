@@ -2,28 +2,26 @@ package com.longmenhuarun.Service;
 
 import cfbs.api.CFBSMsgUtil;
 import com.longmenhuarun.Controller.WebSocket;
-import com.longmenhuarun.Vo.SsdsVo;
 import com.longmenhuarun.Vo.SsxyVo;
 import com.longmenhuarun.common.Constant;
 import com.longmenhuarun.common.MsgUtil;
 import com.longmenhuarun.common.TimeUtil;
-import com.longmenhuarun.entity.TxnSsds;
-import com.longmenhuarun.entity.TxnSsxy;
-import com.longmenhuarun.entity.UiSsds;
+import com.longmenhuarun.entity.InfoSsxy;
+import com.longmenhuarun.entity.InfoSxxy;
 import com.longmenhuarun.entity.UiSsxy;
 import com.longmenhuarun.enums.JYStatusEnum;
 import com.longmenhuarun.enums.XYStatusEnum;
-import com.longmenhuarun.model.SsdsMsg;
 import com.longmenhuarun.model.SsxyMsg;
+import com.longmenhuarun.repository.InfoSsxyRepository;
+import com.longmenhuarun.repository.InfoSxxyRepository;
 import com.longmenhuarun.repository.RetcdRepository;
-import com.longmenhuarun.repository.TxnSsxyRepository;
 import com.longmenhuarun.repository.UiSsxyRepository;
 import com.yjt.cfbs.socket.netty.client.NettyClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,13 +30,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class SsxyServiceImpl implements SsxyService {
     @Autowired
     private NettyClient Client;
     @Autowired
     private UiSsxyRepository uiSsxyRepo;
     @Autowired
-    private TxnSsxyRepository txnSsxyRepo;
+    private InfoSsxyRepository infoSsxyRepo;
+    @Autowired
+    private InfoSxxyRepository infoSxxyRepo;
     @Autowired
     private RetcdRepository retcdRepo;
     @Autowired
@@ -46,7 +47,6 @@ public class SsxyServiceImpl implements SsxyService {
 
     @Override
     public String createSsxyMsg(SsxyMsg ssxyMsg) {
-        ssxyMsg.setReqMsgNo(MsgUtil.getReqMsgNo());
         ssxyMsg.setEntrustDate(TimeUtil.getCurDateStr());
         ssxyMsg.setOrgId(Constant.ORGID);
         ssxyMsg.setProtNo(Constant.getProtNoPre + ssxyMsg.getPayerBank().substring(0, 3) + ssxyMsg.getPayerAcc());
@@ -69,6 +69,7 @@ public class SsxyServiceImpl implements SsxyService {
     @Transactional
     public void insertDB(String ssReqMsg) {
         SsxyMsg ssxyMsg= SsxyMsg.fromMsg(ssReqMsg);
+        //ui表
         UiSsxy uiSsxy=new UiSsxy();
         BeanUtils.copyProperties(ssxyMsg,uiSsxy);
         uiSsxy.setMsgId(ssxyMsg.getReqMsgNo());
@@ -81,44 +82,53 @@ public class SsxyServiceImpl implements SsxyService {
             uiSsxy.setProtActType("DEL");
         }
         uiSsxyRepo.save(uiSsxy);
-        //txn表
-        TxnSsxy txnSsxy=new TxnSsxy();
-        BeanUtils.copyProperties(uiSsxy,txnSsxy);
-        txnSsxy.setMsgId(MsgUtil.getReqMsgNo());
-        txnSsxy.setReqMsgId(uiSsxy.getMsgId());
-        txnSsxy.setEntrustDate(TimeUtil.getCurDateStr());
-        txnSsxyRepo.save(txnSsxy);
+        //info表
+        InfoSsxy infoSsxy =new InfoSsxy();
+        BeanUtils.copyProperties(uiSsxy, infoSsxy);
+        infoSsxy.setMsgId(MsgUtil.getReqMsgNo());
+        infoSsxy.setReqMsgId(uiSsxy.getMsgId());
+        infoSsxy.setEntrustDate(TimeUtil.getCurDateStr());
+        infoSsxyRepo.save(infoSsxy);
     }
     @Override
     @Transactional
     public void updateDB(String ssResMsg) {
         SsxyMsg ssxyMsg=SsxyMsg.fromMsg(ssResMsg);
         //查出txn表
-        TxnSsxy txnSsxy= txnSsxyRepo.findByReqMsgId(ssxyMsg.getReqMsgNo());
-        BeanUtils.copyProperties(ssxyMsg,txnSsxy);
+        InfoSsxy infoSsxy = infoSsxyRepo.findByReqMsgId(ssxyMsg.getReqMsgNo());
+        BeanUtils.copyProperties(ssxyMsg, infoSsxy);
         //ret_remark
-        String retcdremark=retcdRepo.findDescr(txnSsxy.getRetCd());
-        txnSsxy.setRetCdRemark(retcdremark);
-        if(Constant.SUCCESSRETCD.contains(txnSsxy.getRetCd())){
-                txnSsxy.setStatus(JYStatusEnum.SUCCESS.getCode());
+        String retcdremark=retcdRepo.findDescr(infoSsxy.getRetCd());
+        infoSsxy.setRetCdRemark(retcdremark);
+        infoSsxy.setRspDate(TimeUtil.getCurDateStr());
+        infoSsxy.setRspTime(TimeUtil.getCurTimeStr());
+        if(Constant.SUCCESSRETCD.contains(infoSsxy.getRetCd())){
+                infoSsxy.setStatus(JYStatusEnum.SUCCESS.getCode());
+            log.info("请求"+ssxyMsg.getReqMsgNo()+"实时协议生效");
+            infoSsxyRepo.save(infoSsxy);
+            //插入生效表
+            InfoSxxy infoSxxy=new InfoSxxy();
+            BeanUtils.copyProperties(infoSsxy, infoSxxy);
+            infoSxxy.setActiveDate(TimeUtil.getCurDateStr());
+            infoSxxyRepo.save(infoSxxy);
         } else {
-            txnSsxy.setStatus(JYStatusEnum.FAIL.getCode());
+            log.error("请求"+ssxyMsg.getReqMsgNo()+"实时协议失败");
+            infoSsxy.setStatus(JYStatusEnum.FAIL.getCode());
+            infoSsxyRepo.save(infoSsxy);
         }
-        txnSsxy.setRspDate(TimeUtil.getCurDateStr());
-        txnSsxy.setRspTime(TimeUtil.getCurTimeStr());
-        txnSsxyRepo.save(txnSsxy);
+
         //查ui表
         UiSsxy uiSsxy=uiSsxyRepo.findById(ssxyMsg.getReqMsgNo()).orElse(null);
-        BeanUtils.copyProperties(txnSsxy,uiSsxy);
-        uiSsxy.setMsgId(txnSsxy.getReqMsgId());
-        if("S".equals(txnSsxy.getStatus())){
+        BeanUtils.copyProperties(infoSsxy,uiSsxy);
+        uiSsxy.setMsgId(infoSsxy.getReqMsgId());
+        if("S".equals(infoSsxy.getStatus())){
             uiSsxy.setStatus(XYStatusEnum.EFFECTIVE.getCode());
         }
         else {
             uiSsxy.setStatus(XYStatusEnum.ERROR.getCode());
         }
         uiSsxyRepo.save(uiSsxy);
-        if("102".equals(ssxyMsg.getProtActType())&&"S".equals(txnSsxy.getStatus())){
+        if("102".equals(ssxyMsg.getProtActType())&&"S".equals(infoSsxy.getStatus())){
             uiSsxyRepo.cancelSsxyByprotNo(ssxyMsg.getProtNo());
         }
         //推送消息

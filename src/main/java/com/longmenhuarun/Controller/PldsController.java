@@ -1,8 +1,10 @@
 package com.longmenhuarun.Controller;
 
 import cfbs.model.CfbsSsdfMsg;
+import ch.qos.logback.core.rolling.helper.FileNamePattern;
 import com.longmenhuarun.Service.PldsService;
 import com.longmenhuarun.Vo.PldsVo;
+import com.longmenhuarun.common.EncodeUtil;
 import com.longmenhuarun.common.TimeUtil;
 import com.longmenhuarun.model.PldsMsg;
 import lombok.extern.slf4j.Slf4j;
@@ -16,9 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
+import javax.validation.Valid;
+import java.io.*;
 import java.util.Map;
 
 @RestController
@@ -55,13 +56,23 @@ public class PldsController {
             map.put("Msg", "文件为空！！");
             return new ModelAndView("/plds/invoke", map);
         }
+        String filename=file.getOriginalFilename();
+        String filepath = LOCAL_FILE_PATH;
+        try {
+            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filepath + filename));
+            String code = EncodeUtil.getEncode(bis, false);
+            if(!"UTF-8".equals(code)) {
+                map.put("Msg", "文件编码格式错误！！");
+                return new ModelAndView("/plds/invoke", map);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        log.info("收到机构发起批量文件"+filename);
             //转存文件
-            String filename=file.getOriginalFilename();
-            String filepath = LOCAL_FILE_PATH;
-            file.transferTo(new File(filepath+filename));
-
+            file.transferTo(new File(filepath + filename));
         //解析
-        PldsMsg pldsMsg=pldsService.anaCustomFile(filepath,filename);
+         PldsMsg pldsMsg=pldsService.anaCustomFile(filepath,filename);
         //生成明文文件 密文文件
         Map<String,String> filemap=pldsService.genReqPldsFile(pldsMsg);
         //发送
@@ -70,6 +81,7 @@ public class PldsController {
             map.put("Msg", "发送失败！！");
         } else {
             map.put("Msg", "发送成功！！");
+            log.info("发送批量加密文件"+filemap.get("encFileName"));
             //入库
             pldsMsg.setFileName(filemap.get("fileName"));
            pldsService.insertDB(pldsMsg,filename);

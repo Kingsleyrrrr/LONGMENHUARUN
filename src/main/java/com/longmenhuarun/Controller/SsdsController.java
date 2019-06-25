@@ -46,25 +46,32 @@ public class SsdsController  {
                                    BindingResult bindingResult ,
                                    Map<String,Object> map) {
         map.put("ssdsMsg", ssdsMsg);
+        //格式检查
         if (bindingResult.hasErrors()) {
             map.put("Msg", bindingResult.getFieldError().getDefaultMessage());
             return new ModelAndView("ssds/invoke", map);
         }
-        //创建报文
+        //分配一个id
         String ReqMsgNo=MsgUtil.getReqMsgNo();
         ssdsMsg.setReqMsgNo(ReqMsgNo);
+        log.info("收到机构实时代收请求[" + ssdsMsg + "]");
+        //创建报文
         String ssReqMsg = ssdsService.createSsdsMsg(ssdsMsg);
-        log.info("发送报文[" + ssReqMsg + "]");
+        //验证协议
+        if(!ssdsService.checkProtocol(ssReqMsg)){
+            log.error("请求[" + ReqMsgNo + "]协议验证失败");
+            map.put("Msg", "协议验证失败");
+            return new ModelAndView("ssds/invoke", map);
+        }
         //加密并发送报文
         boolean flag = ssdsService.sendSsdsMsg(ssReqMsg);
         if (!flag) {
             map.put("Msg", "发送失败！！");
-            log.error("报文"+ReqMsgNo+"发送失败");
         } else {
             map.put("Msg", "发送成功！！");
+            log.info("发送实时代收报文[" + ssReqMsg + "]");
             //入库
             ssdsService.insertDB(ssReqMsg);
-
             }
         return new ModelAndView("ssds/invoke", map);
     }

@@ -1,6 +1,7 @@
 package com.longmenhuarun.init;
 
 import com.longmenhuarun.Service.PldsService;
+import com.longmenhuarun.Service.SsdsService;
 import com.longmenhuarun.common.FtpUtil;
 import com.longmenhuarun.model.PldsMsg;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,8 @@ public class CheckFtpInit {
     private String RECV_FTP_FILE_PATH;
     @Autowired
     PldsService pldsService;
+    @Autowired
+    SsdsService ssdsService;
     @PostConstruct
     public void init() throws Exception {
 
@@ -59,15 +62,22 @@ public class CheckFtpInit {
 
                                     boolean isDownload = FtpUtil.download(ftpClient, file.getName(), LOCALRECV_FILE_PATH + file.getName());
                                     if(isDownload) {
-
-                                       log.info("收到代收付回应密文文件！[" + file.getName() + "]");
-                                       PldsMsg pldsMsg= pldsService.anaRespPldsFile(file.getName());
-                                        //更新数据库
-                                        pldsService.updateDB(pldsMsg);
-                                        //生成文件
-                                        pldsService.genCustomFile(pldsMsg,pldsMsg.getRefFileName());
-                                        //处理成功后删除FTP文件，以免重复处理
-                                        ftpClient.deleteFile(file.getName());
+                                        String filename=file.getName();
+                                        if(filename.startsWith("DTLTYP")){
+                                            log.info("收到代收付对账文件！[" + filename + "]");
+                                           ssdsService.dz(filename);
+                                            //生成机构对账文件
+                                          //  ssdsService.genCustomFile(pldsMsg, pldsMsg.getRefFileName());
+                                        }else {
+                                            log.info("收到批量回应密文文件！[" + filename + "]");
+                                            PldsMsg pldsMsg = pldsService.anaRespPldsFile(filename);
+                                            //更新数据库
+                                            pldsService.updateDB(pldsMsg);
+                                            //生成客户化回应文件
+                                            pldsService.genCustomFile(pldsMsg, pldsMsg.getRefFileName());
+                                        }
+                                            //处理成功后删除FTP文件，以免重复处理
+                                            ftpClient.deleteFile(filename);
                                     }
                                 }
                             }
