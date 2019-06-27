@@ -14,4 +14,6 @@ public interface SsxyService {
     Page<SsxyVo> findSsxyList(Pageable pageable);
     void updateDB(String ssResMsg);
     String cancelSsxyMsg(String msgId);
+
+    Page<SsxyVo> findSsxyRecord(Pageable pageable);
 }

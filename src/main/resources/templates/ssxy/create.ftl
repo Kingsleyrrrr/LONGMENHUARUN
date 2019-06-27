@@ -85,7 +85,7 @@ this.value=$.trim(this.value);
 
                     </div>
                     <div class="modal-footer">
-                        <button onclick='location.href="/lmhr/ssxy/list"' type="button" class="btn btn-default" data-dismiss="modal">查看</button>
+                        <button onclick='location.href="/lmhr/ssxy/record"' type="button" class="btn btn-default" data-dismiss="modal">查看</button>
 
                     </div>
                 </div>

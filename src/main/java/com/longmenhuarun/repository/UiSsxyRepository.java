@@ -9,9 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 public interface UiSsxyRepository extends JpaRepository<UiSsxy,String> {
-    @Modifying
-    @Transactional
-    @Query(value = "update ui_ssxy xy set xy.status = 'C' where xy.prot_no=?1",nativeQuery=true)
-    void cancelSsxyByprotNo(String protNo);
 
 }

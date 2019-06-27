@@ -32,6 +32,7 @@ public class SsxyMsg {
 	@Pattern(regexp = "^[A-Za-z0-9]+$",message ="用户号有非法字符" )
 	private String userNo;//M用户编号
 	@NotBlank(message = "必填用户名称")
+	@Length(min = 1,max=60,message = "用户名长度错误")
 	@Pattern(regexp = "^[\\u4E00-\\u9FA5A-Za-z0-9_]+$",message ="用户名有非法字符" )
 	private String userName;//M用户名称
 	
@@ -39,7 +40,7 @@ public class SsxyMsg {
 	private String contactAddr;//联系人地址
 	private String contactAddrPost;//联系人地址邮编
 	@NotBlank(message = "必填电话")
-	@Pattern(regexp ="^1(3|4|5|6|7|8|9)\\d{9}$",message ="电话格式错误" )
+	@Pattern(regexp ="(\\(\\d{3,4}\\)|\\d{3,4}-|\\s)?\\d{7,14}",message ="电话格式错误" )
 	private String contactNo;//M联系人电话
 	
 	private String tranType;//M业务种类
@@ -48,10 +49,11 @@ public class SsxyMsg {
 	@Pattern(regexp = "^[A-Za-z0-9]+$",message ="行号有非法字符" )
 	private String payerBank;//M付款行行号
 	@NotBlank(message = "必填账号")
-	@Length(max=35,message = "帐号长度错误")
+	@Length(min = 1,max=35,message = "帐号长度错误")
 	private String payerAcc;//M付款人账号
 	@NotBlank(message = "必填户名")
-	@Pattern(regexp = "^[\u4E00-\u9FA5A-Za-z]+$",message ="户名有非法字符" )
+	@Length(min = 1,max=60,message = "付款人户名长度错误")
+	@Pattern(regexp = "^[\u4E00-\u9FA5A-Za-z]+$",message ="付款人户名有非法字符" )
 	private String payerName;//M付款人名称
 	
 	private String payerCreditType;//付款人证件类型

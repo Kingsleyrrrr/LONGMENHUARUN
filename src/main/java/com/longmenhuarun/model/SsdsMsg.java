@@ -23,8 +23,8 @@ public class SsdsMsg {
 	private String reqMsgNo;
 	private String entrustDate;
 	private String txnDate;
-	@NotBlank(message = "必填用户号")
-	@Length(min = 1,max=18,message = "用户号长度错误")
+	@NotBlank(message = "必填用户编号")
+	@Length(min = 1,max=18,message = "用户编号长度错误")
 	@Pattern(regexp = "^[A-Za-z0-9]+$",message ="用户号有非法字符" )
 	private String userNo;
 	private String orgId;
@@ -36,10 +36,11 @@ public class SsdsMsg {
 	private String outBank;
 	private String outAccBank;
 	@NotBlank(message = "必填账号")
-	@Length(max=35,message = "帐号长度错误")
+	@Length(min = 1,max=35,message = "付款人帐号长度错误")
 	private String payerAcc;
 	@NotBlank(message = "必填户名")
-	@Pattern(regexp = "^[\u4E00-\u9FA5A-Za-z]+$",message ="户名有非法字符" )
+	@Length(min = 1,max=60,message = "付款人户名长度错误")
+	@Pattern(regexp = "^[\u4E00-\u9FA5A-Za-z]+$",message ="付款人户名有非法字符" )
 	private String payerName;
 	private String tranType;
 	private String protocolNo;
@@ -49,6 +50,7 @@ public class SsdsMsg {
 	@NotBlank(message = "必填金额")
 	private String amount;
 	private String charge;
+	@Length(max=60,message = "附言长度错误")
 	private String remark;
 
 	private String retCd;

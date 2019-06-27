@@ -24,21 +24,36 @@ import java.util.Map;
 public class SsxyController {
     @Autowired
     SsxyService ssxyService;
-    @GetMapping(value = "/list")
-    public ModelAndView list(@RequestParam(value = "page", defaultValue = "1") Integer page,
+    @GetMapping(value = "/record")
+    public ModelAndView record(@RequestParam(value = "page", defaultValue = "1") Integer page,
                              @RequestParam(value = "size", defaultValue = "10") Integer size,
                               Map<String, Object> map,
                              @ModelAttribute("Msg") String Msg ){
         Sort sort =  new Sort(Sort.Direction.ASC, "createDate").and(new Sort(Sort.Direction.ASC, "createTime"));
         PageRequest request = PageRequest.of(page - 1, size,sort);
+        Page<SsxyVo> ssxyVoPage = ssxyService.findSsxyRecord(request);
+        System.out.println(ssxyVoPage.getTotalPages());
+        map.put("ssxyVoPage", ssxyVoPage);
+        map.put("currentpage", page);
+        map.put("size", size);
+        if("".equals(Msg) ) map.remove("Msg");
+        return new ModelAndView("/ssxy/record",map);
+    }
+    @GetMapping(value = "/list")
+    public ModelAndView list(@RequestParam(value = "page", defaultValue = "1") Integer page,
+                             @RequestParam(value = "size", defaultValue = "10") Integer size,
+                             Map<String, Object> map,
+                             @ModelAttribute("Msg") String Msg ){
+        Sort sort =  new Sort(Sort.Direction.ASC, "activeDate");
+        PageRequest request = PageRequest.of(page - 1, size,sort);
         Page<SsxyVo> ssxyVoPage = ssxyService.findSsxyList(request);
+        System.out.println(ssxyVoPage.getTotalPages());
         map.put("ssxyVoPage", ssxyVoPage);
         map.put("currentpage", page);
         map.put("size", size);
         if("".equals(Msg) ) map.remove("Msg");
         return new ModelAndView("/ssxy/list",map);
     }
-
     @GetMapping(value = "/create")
     public ModelAndView create(){
         return new ModelAndView("/ssxy/create");
@@ -61,7 +76,7 @@ public class SsxyController {
         //创建报文
         String ssReqMsg = ssxyService.createSsxyMsg(ssxyMsg);
         //加密并发送报文
-        boolean flag = ssxyService.sendSsxyMsg(ssReqMsg);
+        boolean flag =   ssxyService.sendSsxyMsg(ssReqMsg);
         if (!flag) {
             map.put("Msg", "发送失败！！");
         } else {
@@ -73,11 +88,11 @@ public class SsxyController {
         return new ModelAndView("/ssxy/create", map);
     }
     @GetMapping("/cancel")
-    public ModelAndView cancel(@RequestParam String msgId,
+    public ModelAndView cancel(@RequestParam String protNo,
                               RedirectAttributes attributes) {
-        log.info("收到机构撤销协议请求[" + msgId + "]");
+        log.info("收到机构撤销协议请求[" + protNo + "]");
         //创建报文
-        String ssReqMsg = ssxyService.cancelSsxyMsg(msgId);
+        String ssReqMsg = ssxyService.cancelSsxyMsg(protNo);
         log.info("发送撤销协议报文[" + ssReqMsg + "]");
         boolean flag = ssxyService.sendSsxyMsg(ssReqMsg);
         if (!flag) {

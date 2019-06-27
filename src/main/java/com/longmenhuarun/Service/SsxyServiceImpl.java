@@ -22,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,11 +77,6 @@ public class SsxyServiceImpl implements SsxyService {
         uiSsxy.setCreateDate(TimeUtil.getCurDateStr());
         uiSsxy.setCreateTime(TimeUtil.getCurTimeStr());
         uiSsxy.setStatus(JYStatusEnum.ANSWER.getCode());
-        if("100".equals(uiSsxy.getProtActType())){
-            uiSsxy.setProtActType("ADD");
-        }else if("102".equals(uiSsxy.getProtActType())){
-            uiSsxy.setProtActType("DEL");
-        }
         uiSsxyRepo.save(uiSsxy);
         //info表
         InfoSsxy infoSsxy =new InfoSsxy();
@@ -90,6 +86,7 @@ public class SsxyServiceImpl implements SsxyService {
         infoSsxy.setEntrustDate(TimeUtil.getCurDateStr());
         infoSsxyRepo.save(infoSsxy);
     }
+
     @Override
     @Transactional
     public void updateDB(String ssResMsg) {
@@ -129,19 +126,19 @@ public class SsxyServiceImpl implements SsxyService {
         }
         uiSsxyRepo.save(uiSsxy);
         if("102".equals(ssxyMsg.getProtActType())&&"S".equals(infoSsxy.getStatus())){
-            uiSsxyRepo.cancelSsxyByprotNo(ssxyMsg.getProtNo());
+            infoSxxyRepo.deleteByprotNo(ssxyMsg.getProtNo());
         }
         //推送消息
         webSocket.sendMessage(ssxyMsg.getReqMsgNo());
     }
 
     @Override
-    public String cancelSsxyMsg(String msgId) {
+    public String cancelSsxyMsg(String protNo) {
         //查表
-        UiSsxy uiSsxy=uiSsxyRepo.findById(msgId).orElse(null);
+        InfoSxxy infoSxxy=infoSxxyRepo.findByProtNo(protNo);
         //组装报文
         SsxyMsg ssxyMsg=new SsxyMsg();
-        BeanUtils.copyProperties(uiSsxy,ssxyMsg);
+        BeanUtils.copyProperties(infoSxxy,ssxyMsg);
         ssxyMsg.setReqMsgNo(MsgUtil.getReqMsgNo());
         ssxyMsg.setEntrustDate(TimeUtil.getCurDateStr());
         return ssxyMsg.toDelMsg();
@@ -149,13 +146,25 @@ public class SsxyServiceImpl implements SsxyService {
 
     @Override
     public Page<SsxyVo> findSsxyList(Pageable pageable) {
+        Page<InfoSxxy> SxxyPage = infoSxxyRepo.findAll(pageable);
+        List<SsxyVo> SsxyVoList = new ArrayList<>();
+        for (InfoSxxy infoSxxy : SxxyPage.getContent()) {
+            SsxyVo ssxyVo = new SsxyVo();
+            BeanUtils.copyProperties(infoSxxy, ssxyVo);
+            SsxyVoList.add(ssxyVo);
+        }
+        return new PageImpl<SsxyVo>(SsxyVoList, pageable, SxxyPage.getTotalElements());
+
+    }
+
+    @Override
+    public Page<SsxyVo> findSsxyRecord(Pageable pageable) {
         Page<UiSsxy> UiSsxyPage = uiSsxyRepo.findAll(pageable);
         List<SsxyVo> SsxyVoList = new ArrayList<>();
         for (UiSsxy uiSsxy : UiSsxyPage.getContent()) {
             SsxyVo ssxyVo = new SsxyVo();
             BeanUtils.copyProperties(uiSsxy, ssxyVo);
             ssxyVo.setCreateTime(uiSsxy.getCreateDate()+uiSsxy.getCreateTime());
-            if("100".equals(ssxyVo.getProtActType()))
             SsxyVoList.add(ssxyVo);
         }
         return new PageImpl<SsxyVo>(SsxyVoList, pageable, UiSsxyPage.getTotalElements());

@@ -26,7 +26,7 @@ public class SsxyVo {
     private String status;
     private String protActType;
     private String createTime;
-
+    private String activeDate;
    public String getTypeMsg(){
        return "燃气费";
    }
