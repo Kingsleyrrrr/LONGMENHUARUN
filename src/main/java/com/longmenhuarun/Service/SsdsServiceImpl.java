@@ -60,7 +60,7 @@ public class SsdsServiceImpl implements SsdsService {
         ssdsMsg.setOrigBank(Constant.ORIGBANK);
         ssdsMsg.setOrigAcc(Constant.ORIGACC);
         ssdsMsg.setTranType(Constant.TRANTYPE);
-        ssdsMsg.setProtocolNo(Constant.getProtNoPre + ssdsMsg.getOutBank().substring(0, 3) + ssdsMsg.getPayerAcc());
+       // ssdsMsg.setProtocolNo(Constant.getProtNoPre() + ssdsMsg.getOutBank().substring(0, 3) + ssdsMsg.getPayerAcc());
         return ssdsMsg.toMsg();
     }
 
@@ -99,8 +99,7 @@ public class SsdsServiceImpl implements SsdsService {
 
     @Override
     @Transactional
-    public void updateDB(String ssResMsg) {
-        SsdsMsg ssdsMsg = SsdsMsg.fromMsg(ssResMsg);
+    public void updateDB(SsdsMsg ssdsMsg) {
         //查出txn表
         TxnSsds txnSsds = txnSsdsRepo.findByReqMsgId(ssdsMsg.getReqMsgNo());
         //怕附言没了
@@ -112,10 +111,10 @@ public class SsdsServiceImpl implements SsdsService {
         //成功
         if (Constant.SUCCESSRETCD.contains(txnSsds.getRetCd())) {
             txnSsds.setStatus(JYStatusEnum.SUCCESS.getCode());
-            log.info("请求" + ssdsMsg.getReqMsgNo() + "实时代收成功");
+            log.info("交易序号" + ssdsMsg.getReqMsgNo() + "实时代收成功");
         } else {
             txnSsds.setStatus(JYStatusEnum.FAIL.getCode());
-            log.error("请求" + ssdsMsg.getReqMsgNo() + "实时代收失败");
+            log.error("交易序号" + ssdsMsg.getReqMsgNo() + "实时代收失败");
         }
         txnSsds.setDzFlag(DZStatusEnum.CHECK.getCode());
         txnSsds.setRspDate(TimeUtil.getCurDateStr());
@@ -131,8 +130,8 @@ public class SsdsServiceImpl implements SsdsService {
     }
 
     @Override
-    public Page<SsdsVo> findSsdsList(Pageable pageable) {
-        Page<UiSsds> UiSsdsPage = uiSsdsRepo.findAll(pageable);
+    public Page<SsdsVo> findSsdsList(SsdsMsg ssdsMsg,Pageable pageable) {
+       // Page<UiSsds> UiSsdsPage = uiSsdsRepo.findAll(Specification<T> spec,pageable);
         List<SsdsVo> SsdsVoList = new ArrayList<>();
         for (UiSsds uiSsds : UiSsdsPage.getContent()) {
             SsdsVo ssdsVo = new SsdsVo();
@@ -165,6 +164,7 @@ public class SsdsServiceImpl implements SsdsService {
                     uiSsds.setDzDate(TimeUtil.getCurDateStr());
                     uiSsdsRepo.save(uiSsds);
                 }
+                log.info("交易序号" + dz.getMsgId()+ "对账成功");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -172,12 +172,11 @@ public class SsdsServiceImpl implements SsdsService {
     }
 
     @Override
-    public boolean checkProtocol(String ssReqMsg) {
-        SsdsMsg ssdsMsg = SsdsMsg.fromMsg(ssReqMsg);
+    public String checkProtocol( SsdsMsg ssdsMsg) {
         InfoSxxy infoSxxy = infoSxxyRepo.checkProt(ssdsMsg.getOrgId(), ssdsMsg.getTranType(), ssdsMsg.getUserNo());
-        if(ssdsMsg.getProtocolNo().equals(infoSxxy.getProtNo())){
-            return true;
+        if(infoSxxy!=null) {
+            return infoSxxy.getProtNo();
         }
-        return false;
+        return null;
     }
 }

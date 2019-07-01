@@ -2,12 +2,14 @@ package com.longmenhuarun.Service;
 
 import cfbs.api.CFBSConstant;
 import cfbs.api.CFBSMsgUtil;
+import com.longmenhuarun.Exception.PldsFileException;
 import com.longmenhuarun.Vo.PldsVo;
 import com.longmenhuarun.common.Constant;
 import com.longmenhuarun.common.FtpUtil;
 import com.longmenhuarun.common.MsgUtil;
 import com.longmenhuarun.common.TimeUtil;
 import com.longmenhuarun.entity.*;
+import com.longmenhuarun.enums.ErrorEnum;
 import com.longmenhuarun.enums.JYStatusEnum;
 import com.longmenhuarun.model.PldsMsg;
 import com.longmenhuarun.repository.*;
@@ -67,9 +69,10 @@ import java.util.Map;
             BufferedReader breader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath + fileName), "UTF-8"));
             String temp = breader.readLine();
             String[] attrs = temp.split("\\|", -1);
-
+         if(attrs[0].length()>10||attrs[0].length()==0) throw new PldsFileException(fileName,ErrorEnum.COUNTERROR);
+         if(attrs[1].length()>16||attrs[1].length()==0) throw new PldsFileException(fileName,ErrorEnum.AMOUNTERROR);
             //组文件头
-            pldsMsg.setFileName(Constant.prepldsFileName + TimeUtil.getCurDateStr() + MsgUtil.getPlpackNo());
+            pldsMsg.setFileName(Constant.getPrepldsFileName()+ TimeUtil.getCurDateStr() + MsgUtil.getPlpackNo());
             pldsMsg.setOrgId(Constant.ORGID);
             pldsMsg.setOrigBank(Constant.ORIGBANK);
             pldsMsg.setOrigAcc(Constant.ORIGACC);
@@ -85,6 +88,12 @@ import java.util.Map;
 
             while ( (temp=breader.readLine()) !=null) {
                  attrs = temp.split("\\|", -1);
+                if(attrs[0].length()>16||attrs[0].length()==0) throw new PldsFileException(fileName,ErrorEnum.SEQERROR);
+                if(attrs[1].length()>18||attrs[1].length()==0) throw new PldsFileException(fileName,ErrorEnum.USERNOERROR);
+                if(attrs[4].length()>35||attrs[4].length()==0) throw new PldsFileException(fileName,ErrorEnum.ACCERROR);
+                if(attrs[10].length()>60||attrs[10].length()==0) throw new PldsFileException(fileName,ErrorEnum.PROTNOERROR);
+                if(attrs[6].length()>15||attrs[6].length()==0) throw new PldsFileException(fileName,ErrorEnum.ONCEAMOUNTERROR);
+
                 //组文件体
                 PldsMsg.PldsMsgDetail detail = pldsMsg.new PldsMsgDetail();
                 detail.setTxnSeq(attrs[0]);//
@@ -106,7 +115,7 @@ import java.util.Map;
             breader.close();
             return pldsMsg;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
       return  null;
     }
@@ -231,8 +240,10 @@ import java.util.Map;
            String retcdremark=retcdRepo.findDescr(details.getRetCode());
            if(Constant.SUCCESSRETCD.contains(details.getRetCode())){
                uiPlds.setStatus(JYStatusEnum.SUCCESS.getCode());
+             log.info("交易序号" + details.getTxnSeq() + "批量代收成功");
            } else {
                uiPlds.setStatus(JYStatusEnum.FAIL.getCode());
+               log.info("交易序号" + details.getTxnSeq() + "批量代收失败");
            }
            uiPlds.setRetCdRemark(retcdremark);
            uiPlds.setWorkReturnNo(details.getWorkReturnNo());

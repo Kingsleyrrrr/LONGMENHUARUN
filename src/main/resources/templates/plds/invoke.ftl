@@ -27,6 +27,7 @@
         </div>
         <br/><br/>
         <input type="submit" value="解析并发送" /><span style="color:#ff0000">${Msg!""}</span>
+    </form>
 </div>
 </body>
 </html>

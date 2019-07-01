@@ -26,10 +26,11 @@ public class SsdsController  {
     @GetMapping(value = "/list")
     public ModelAndView list(@RequestParam(value = "page", defaultValue = "1") Integer page,
                              @RequestParam(value = "size", defaultValue = "10") Integer size,
+                              SsdsMsg ssdsMsg,
                              Map<String, Object> map){
         Sort sort =  new Sort(Sort.Direction.ASC, "createDate").and(new Sort(Sort.Direction.ASC, "createTime"));
         PageRequest request = PageRequest.of(page - 1, size,sort);
-        Page<SsdsVo> ssdsVoPage = ssdsService.findSsdsList(request);
+        Page<SsdsVo> ssdsVoPage = ssdsService.findSsdsList(ssdsMsg,request);
         map.put("ssdsVoPage", ssdsVoPage);
         map.put("currentpage", page);
         map.put("size", size);
@@ -54,22 +55,24 @@ public class SsdsController  {
         //分配一个id
         String ReqMsgNo=MsgUtil.getReqMsgNo();
         ssdsMsg.setReqMsgNo(ReqMsgNo);
-        log.info("收到机构实时代收请求[" + ssdsMsg + "]");
-        //创建报文
-        String ssReqMsg = ssdsService.createSsdsMsg(ssdsMsg);
+        log.info("交易序号:"+ReqMsgNo+"收到机构实时代收请求[" + ssdsMsg + "]");
         //验证协议
-        if(!ssdsService.checkProtocol(ssReqMsg)){
-            log.error("请求[" + ReqMsgNo + "]协议验证失败");
-            map.put("Msg", "协议验证失败");
+        String protNo=ssdsService.checkProtocol(ssdsMsg);
+        if(protNo==null){
+            log.error("交易序号:"+ReqMsgNo+"请求[" + ReqMsgNo + "]协议不存在");
+            map.put("Msg", "协议不存在");
             return new ModelAndView("ssds/invoke", map);
         }
+        ssdsMsg.setProtocolNo(protNo);
+        //创建报文
+        String ssReqMsg = ssdsService.createSsdsMsg(ssdsMsg);
         //加密并发送报文
         boolean flag = ssdsService.sendSsdsMsg(ssReqMsg);
         if (!flag) {
             map.put("Msg", "发送失败！！");
         } else {
             map.put("Msg", "发送成功！！");
-            log.info("发送实时代收报文[" + ssReqMsg + "]");
+            log.info("交易序号:"+ReqMsgNo+"发送实时代收报文[" + ssReqMsg + "]");
             //入库
             ssdsService.insertDB(ssReqMsg);
             }

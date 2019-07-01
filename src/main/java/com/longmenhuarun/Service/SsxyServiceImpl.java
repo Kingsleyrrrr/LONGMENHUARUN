@@ -50,7 +50,7 @@ public class SsxyServiceImpl implements SsxyService {
     public String createSsxyMsg(SsxyMsg ssxyMsg) {
         ssxyMsg.setEntrustDate(TimeUtil.getCurDateStr());
         ssxyMsg.setOrgId(Constant.ORGID);
-        ssxyMsg.setProtNo(Constant.getProtNoPre + ssxyMsg.getPayerBank().substring(0, 3) + ssxyMsg.getPayerAcc());
+        ssxyMsg.setProtNo(Constant.getProtNoPre() + ssxyMsg.getPayerBank().substring(0, 3) + ssxyMsg.getPayerAcc());
         ssxyMsg.setTranType(Constant.TRANTYPE);
         return ssxyMsg.toAddMsg();
     }
@@ -89,8 +89,7 @@ public class SsxyServiceImpl implements SsxyService {
 
     @Override
     @Transactional
-    public void updateDB(String ssResMsg) {
-        SsxyMsg ssxyMsg=SsxyMsg.fromMsg(ssResMsg);
+    public void updateDB(SsxyMsg ssxyMsg) {
         //查出txn表
         InfoSsxy infoSsxy = infoSsxyRepo.findByReqMsgId(ssxyMsg.getReqMsgNo());
         BeanUtils.copyProperties(ssxyMsg, infoSsxy);
@@ -101,15 +100,24 @@ public class SsxyServiceImpl implements SsxyService {
         infoSsxy.setRspTime(TimeUtil.getCurTimeStr());
         if(Constant.SUCCESSRETCD.contains(infoSsxy.getRetCd())){
                 infoSsxy.setStatus(JYStatusEnum.SUCCESS.getCode());
-            log.info("请求"+ssxyMsg.getReqMsgNo()+"实时协议生效");
+                if("100".equals(ssxyMsg.getProtActType())) {
+                    log.info("交易序号" + ssxyMsg.getReqMsgNo() + "新增协议生效");
+                    //插入生效表
+                    InfoSxxy infoSxxy=new InfoSxxy();
+                    BeanUtils.copyProperties(infoSsxy, infoSxxy);
+                    infoSxxy.setActiveDate(TimeUtil.getCurDateStr());
+                    infoSxxyRepo.save(infoSxxy);
+                }else {
+                    log.info("交易序号" + ssxyMsg.getReqMsgNo() + "撤销协议成功");
+                    infoSxxyRepo.deleteByprotNo(ssxyMsg.getProtNo());
+                }
             infoSsxyRepo.save(infoSsxy);
-            //插入生效表
-            InfoSxxy infoSxxy=new InfoSxxy();
-            BeanUtils.copyProperties(infoSsxy, infoSxxy);
-            infoSxxy.setActiveDate(TimeUtil.getCurDateStr());
-            infoSxxyRepo.save(infoSxxy);
         } else {
-            log.error("请求"+ssxyMsg.getReqMsgNo()+"实时协议失败");
+            if("100".equals(ssxyMsg.getProtActType())) {
+                log.error("交易序号" + ssxyMsg.getReqMsgNo() + "新增协议失败");
+            }else {
+                log.info("交易序号" + ssxyMsg.getReqMsgNo() + "撤销协议失败");
+            }
             infoSsxy.setStatus(JYStatusEnum.FAIL.getCode());
             infoSsxyRepo.save(infoSsxy);
         }
@@ -125,21 +133,18 @@ public class SsxyServiceImpl implements SsxyService {
             uiSsxy.setStatus(XYStatusEnum.ERROR.getCode());
         }
         uiSsxyRepo.save(uiSsxy);
-        if("102".equals(ssxyMsg.getProtActType())&&"S".equals(infoSsxy.getStatus())){
-            infoSxxyRepo.deleteByprotNo(ssxyMsg.getProtNo());
-        }
         //推送消息
         webSocket.sendMessage(ssxyMsg.getReqMsgNo());
     }
 
     @Override
-    public String cancelSsxyMsg(String protNo) {
+    public String cancelSsxyMsg(String ReqMsgNo,String protNo) {
         //查表
         InfoSxxy infoSxxy=infoSxxyRepo.findByProtNo(protNo);
         //组装报文
         SsxyMsg ssxyMsg=new SsxyMsg();
         BeanUtils.copyProperties(infoSxxy,ssxyMsg);
-        ssxyMsg.setReqMsgNo(MsgUtil.getReqMsgNo());
+        ssxyMsg.setReqMsgNo(ReqMsgNo);
         ssxyMsg.setEntrustDate(TimeUtil.getCurDateStr());
         return ssxyMsg.toDelMsg();
     }

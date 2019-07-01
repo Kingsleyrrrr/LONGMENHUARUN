@@ -72,7 +72,7 @@ public class SsxyController {
         //分配一个id
         String ReqMsgNo= MsgUtil.getReqMsgNo();
         ssxyMsg.setReqMsgNo(ReqMsgNo);
-        log.info("收到机构实时协议请求[" + ssxyMsg + "]");
+        log.info("交易序号:"+ReqMsgNo+"收到机构实时协议请求[" + ssxyMsg + "]");
         //创建报文
         String ssReqMsg = ssxyService.createSsxyMsg(ssxyMsg);
         //加密并发送报文
@@ -81,7 +81,7 @@ public class SsxyController {
             map.put("Msg", "发送失败！！");
         } else {
             map.put("Msg", "发送成功！！");
-            log.info("发送实时协议报文[" + ssReqMsg + "]");
+            log.info("交易序号:"+ReqMsgNo+"发送实时协议报文[" + ssReqMsg + "]");
             //入库
             ssxyService.insertDB(ssReqMsg);
         }
@@ -90,15 +90,16 @@ public class SsxyController {
     @GetMapping("/cancel")
     public ModelAndView cancel(@RequestParam String protNo,
                               RedirectAttributes attributes) {
-        log.info("收到机构撤销协议请求[" + protNo + "]");
+        String ReqMsgNo=MsgUtil.getReqMsgNo();
+        log.info("交易序号:"+ReqMsgNo+"收到机构撤销协议请求[" + protNo + "]");
         //创建报文
-        String ssReqMsg = ssxyService.cancelSsxyMsg(protNo);
-        log.info("发送撤销协议报文[" + ssReqMsg + "]");
+        String ssReqMsg = ssxyService.cancelSsxyMsg(ReqMsgNo,protNo);
         boolean flag = ssxyService.sendSsxyMsg(ssReqMsg);
         if (!flag) {
             attributes.addFlashAttribute("Msg", "发送失败！！");
         } else {
             attributes.addFlashAttribute("Msg", "发送成功！！");
+            log.info("交易序号:"+ReqMsgNo+"发送撤销协议报文[" + ssReqMsg + "]");
             //入库
             ssxyService.insertDB(ssReqMsg);
         }

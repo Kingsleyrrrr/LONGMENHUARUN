@@ -19,12 +19,42 @@
         <div class="container-fluid">
             <div class="row clearfix">
                 <div class="col-md-12 column">
+                    <form class="form-inline" role="form">
+                        <div class="form-group">
+                            <label class="control-label" for="name">用户编号</label>
+                            <input type="text" class="form-control"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="name">用户名称</label>
+                            <input type="text" class="form-control"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="name">银行代码</label>
+                            <input type="text" class="form-control"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="name">银行账号</label>
+                            <input type="text" class="form-control"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="name">银行户名</label>
+                            <input type="text" class="form-control"
+                            >
+                        </div>&nbsp;&nbsp;&nbsp;
+                        <button type="submit" class="btn btn-primary">查询</button>
+                    </form>
+                    <br><br>
                     <table class="table table-bordered table-condensed">
                         <thead>
                         <tr>
                             <th>协议号</th>
                             <th>业务种类</th>
                             <th>用户编号</th>
+                            <th>用户名称</th>
                             <th>付款行行号</th>
                             <th>付款人账号</th>
                             <th>付款人名称</th>
@@ -39,6 +69,7 @@
                                 <td>${ssxyVo.protNo}</td>
                                 <td>${ssxyVo.getTypeMsg()}</td>
                                 <td>${ssxyVo.userNo}</td>
+                                <td>${ssxyVo.userName}</td>
                                 <td>${ssxyVo.payerBank}</td>
                                 <td>${ssxyVo.payerAcc}</td>
                                 <td>${ssxyVo.payerName}</td>

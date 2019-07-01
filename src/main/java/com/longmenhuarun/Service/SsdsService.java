@@ -10,10 +10,10 @@ public interface SsdsService {
     String createSsdsMsg(SsdsMsg ssdsMsg);
     boolean sendSsdsMsg(String ssReqMsg);
     void insertDB(String ssReqMsg);
-    void updateDB(String ssResMsg);
-    Page<SsdsVo> findSsdsList(Pageable pageable);
+    void updateDB(SsdsMsg ssdsMsg);
+    Page<SsdsVo> findSsdsList(SsdsMsg ssdsMsg,Pageable pageable);
 
     void dz(String filename);
 
-    boolean checkProtocol(String ssReqMsg);
+    String checkProtocol(SsdsMsg ssdsMsg);
 }

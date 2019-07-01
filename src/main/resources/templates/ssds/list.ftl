@@ -19,6 +19,40 @@
         <div class="container-fluid">
             <div class="row clearfix">
                 <div class="col-md-12 column">
+                    <form class="form-inline" role="form">
+                        <div class="form-group">
+                            <label class="control-label" for="name">用户编号</label>
+                            <input type="text" class="form-control"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="name">用户名称</label>
+                            <input type="text" class="form-control"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="name">银行代码</label>
+                            <input type="text" class="form-control"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="name">银行账号</label>
+                            <input type="text" class="form-control"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="name">银行户名</label>
+                            <input type="text" class="form-control"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="name">协议号</label>
+                            <input type="text" class="form-control"
+                            >
+                        </div>&nbsp;&nbsp;&nbsp;
+                        <button type="submit" class="btn btn-primary">查询</button>
+                    </form>
+                    <br><br>
                     <table class="table table-bordered table-condensed">
                         <thead>
                         <tr>
