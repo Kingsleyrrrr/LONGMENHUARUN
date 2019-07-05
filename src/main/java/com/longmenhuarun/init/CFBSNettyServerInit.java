@@ -34,6 +34,8 @@ public class CFBSNettyServerInit {
 	@Resource
 	private NettyServer server;
 
+	@Autowired
+	WebSocket webSocket;
 	@PostConstruct
 	public void init() throws Exception {
 		
@@ -51,6 +53,8 @@ public class CFBSNettyServerInit {
 								if(unpackMsg.startsWith(TXNTYPE_SSDS)) {//实时代收
 									SsdsMsg ssdsMsg = SsdsMsg.fromMsg(unpackMsg);
 									log.info("交易序号:"+ssdsMsg.getReqMsgNo()+"收到实时代收回应报文["+unpackMsg+"]");
+									//推送消息
+									webSocket.sendMessage(ssdsMsg.getReqMsgNo());
 									ssdsService.updateDB(ssdsMsg);
 								}
 								else if(unpackMsg.startsWith(TXNTYPE_SSXY)){
@@ -60,6 +64,8 @@ public class CFBSNettyServerInit {
 									}else {
 										log.info("交易序号:" + ssxyMsg.getReqMsgNo() + "收到撤销协议回应报文[" + unpackMsg + "]");
 									}
+									//推送消息
+									webSocket.sendMessage(ssxyMsg.getReqMsgNo());
 									ssxyService.updateDB(ssxyMsg);
 								}
 					    	} catch(Exception e) {

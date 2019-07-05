@@ -56,18 +56,13 @@
                 </div>
             </div>
         </div>
-        <#if Msg??>
-            <script>
-                alert("${Msg}");//弹出
-            </script>
-        </#if>
     </div>
     <ul class="pagination pull-right">
         <#if currentpage lte 1>
             <li class="disabled"><a href="#">上一页</a></li>
         <#else>
             <li>
-                <a href="/lmhr/ssxy/list?page=${currentpage-1}&size=${size}">上一页</a>
+                <a href="/lmhr/ssxy/record?page=${currentpage-1}&size=${size}">上一页</a>
             </li>
         </#if>
         <#if ssxyVoPage?? && ssxyVoPage.getTotalPages()==0>
@@ -79,7 +74,7 @@
             <#else>
                 <li>
             </#if>
-            <a href="/lmhr/ssxy/list?page=${index}&size=${size}">
+            <a href="/lmhr/ssxy/record?page=${index}&size=${size}">
                 ${index}
             </a>
             </li>
@@ -90,7 +85,7 @@
             <li class="disabled"><a href="#">下一页</a></li>
         <#else>
             <li>
-                <a href="/lmhr/ssxy/list?page=${currentpage+1}&size=${size}">下一页</a>
+                <a href="/lmhr/ssxy/record?page=${currentpage+1}&size=${size}">下一页</a>
             </li>
         </#if>
     </ul>
@@ -115,30 +110,4 @@
     </div>
 </div>
 </body>
-<script>
-    var websocket=null;
-    if('WebSocket'in window){
-        websocket =new WebSocket('ws://localhost:8080/webSocket');
-    }else{
-        alert('该浏览器不支持Websocket');
-    }
-    websocket.onopen=function (event) {
-        console.log("建立连接");
-    }
-    websocket.onclose=function (event) {
-        console.log("连接关闭");
-    }
-    websocket.onmessage=function (event) {
-        //弹窗
-        var body = document.getElementById("noticebody");
-        body.innerText="请求"+event.data+"已有回应，请前往查看";
-        $("#notice").modal("show");
-    }
-    websocket.onerror=function (event) {
-        console.log("通信错误");
-    }
-    websocket.onbeforeunload=function (event) {
-        websocket.close();
-    }
-</script>
 </html>

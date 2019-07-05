@@ -31,6 +31,8 @@ public class PldsController {
 
     @Value("${LOCAL_FILE_PATH}")
     private String LOCAL_FILE_PATH;
+    @Value("${LOCALSEND_FILE_PATH}")
+    private String LOCALSEND_FILE_PATH;
     @Autowired
     PldsService pldsService;
     @GetMapping(value = "/list")
@@ -56,37 +58,40 @@ public class PldsController {
     public ModelAndView sendFile( MultipartFile file, Map<String,Object> map)throws Exception{
         if(file.isEmpty()) {
             map.put("Msg", "文件为空！！");
+            log.error("文件为空！！");
             return new ModelAndView("/plds/invoke", map);
         }
         String filename=file.getOriginalFilename();
         String filepath = LOCAL_FILE_PATH;
+        //转存文件
+        file.transferTo(new File(filepath + filename));
+        log.info("收到机构客户化文件名"+filename);
         try {
             BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filepath + filename));
             String code = EncodeUtil.getEncode(bis, false);
             if(!"UTF-8".equals(code)) {
                 map.put("Msg", "文件编码格式错误！！");
+                log.error("文件编码格式错误！！");
                 return new ModelAndView("/plds/invoke", map);
             }
         }catch (Exception e){
             e.printStackTrace();
         }
-        log.info("收到机构发起批量文件"+filename);
-            //转存文件
-            file.transferTo(new File(filepath + filename));
+        log.info("收到机构客户化文件名"+filename);
         //解析
          PldsMsg pldsMsg=pldsService.anaCustomFile(filepath,filename);
         //生成明文文件 密文文件
         Map<String,String> filemap=pldsService.genReqPldsFile(pldsMsg);
+        //入库
+        pldsMsg.setFileName(filemap.get("fileName"));
+        pldsService.insertDB(pldsMsg,filename);
         //发送
         boolean flag =pldsService.sendFile(filemap.get("encFileName"));
         if (!flag) {
             map.put("Msg", "发送失败！！");
         } else {
             map.put("Msg", "发送成功！！");
-            log.info("发送批量加密文件"+filemap.get("encFileName"));
-            //入库
-            pldsMsg.setFileName(filemap.get("fileName"));
-           pldsService.insertDB(pldsMsg,filename);
+            log.info("发送批量交易文件名"+filemap.get("encFileName"));
         }
         return new ModelAndView("/plds/invoke", map);
     }

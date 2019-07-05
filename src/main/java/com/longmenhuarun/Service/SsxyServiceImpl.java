@@ -8,6 +8,7 @@ import com.longmenhuarun.common.MsgUtil;
 import com.longmenhuarun.common.TimeUtil;
 import com.longmenhuarun.entity.InfoSsxy;
 import com.longmenhuarun.entity.InfoSxxy;
+import com.longmenhuarun.entity.UiSsds;
 import com.longmenhuarun.entity.UiSsxy;
 import com.longmenhuarun.enums.JYStatusEnum;
 import com.longmenhuarun.enums.XYStatusEnum;
@@ -20,10 +21,7 @@ import com.yjt.cfbs.socket.netty.client.NettyClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -133,8 +131,6 @@ public class SsxyServiceImpl implements SsxyService {
             uiSsxy.setStatus(XYStatusEnum.ERROR.getCode());
         }
         uiSsxyRepo.save(uiSsxy);
-        //推送消息
-        webSocket.sendMessage(ssxyMsg.getReqMsgNo());
     }
 
     @Override
@@ -150,8 +146,21 @@ public class SsxyServiceImpl implements SsxyService {
     }
 
     @Override
-    public Page<SsxyVo> findSsxyList(Pageable pageable) {
-        Page<InfoSxxy> SxxyPage = infoSxxyRepo.findAll(pageable);
+    public Page<SsxyVo> findSsxyList(SsxyMsg ssxyMsg,Pageable pageable) {
+        Page<InfoSxxy> SxxyPage;
+        if(ssxyMsg!=null) {
+            InfoSxxy temp = new InfoSxxy();
+            temp.setUserNo(ssxyMsg.getUserNo());
+            temp.setPayerBank(ssxyMsg.getPayerBank());
+            temp.setPayerAcc(ssxyMsg.getPayerAcc());
+            temp.setPayerName(ssxyMsg.getPayerName());
+            temp.setProtNo(ssxyMsg.getProtNo());
+            temp.setUserName(ssxyMsg.getUserName());
+            Example<InfoSxxy> example = Example.of(temp);
+            SxxyPage = infoSxxyRepo.findAll(example, pageable);
+        }else {
+            SxxyPage = infoSxxyRepo.findAll(pageable);
+        }
         List<SsxyVo> SsxyVoList = new ArrayList<>();
         for (InfoSxxy infoSxxy : SxxyPage.getContent()) {
             SsxyVo ssxyVo = new SsxyVo();

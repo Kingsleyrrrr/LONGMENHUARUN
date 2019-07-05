@@ -65,11 +65,12 @@ public class CheckFtpInit {
                                         String filename=file.getName();
                                         if(filename.startsWith("DTLTYP")){
                                             log.info("收到代收付对账文件！[" + filename + "]");
-                                           ssdsService.dz(filename);
+                                          String decFileName = ssdsService.dz(filename);
                                             //生成机构对账文件
-                                          //  ssdsService.genCustomFile(pldsMsg, pldsMsg.getRefFileName());
+                                            if(decFileName!=null)
+                                          ssdsService.genCustomFile(decFileName);
                                         }else {
-                                            log.info("收到批量回应密文文件！[" + filename + "]");
+                                            log.info("收到批量回应密文文件名[" + filename + "]");
                                             PldsMsg pldsMsg = pldsService.anaRespPldsFile(filename);
                                             //更新数据库
                                             pldsService.updateDB(pldsMsg);

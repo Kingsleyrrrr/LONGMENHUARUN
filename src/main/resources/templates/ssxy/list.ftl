@@ -19,31 +19,36 @@
         <div class="container-fluid">
             <div class="row clearfix">
                 <div class="col-md-12 column">
-                    <form class="form-inline" role="form">
+                    <form class="form-inline"  method="post" action="/lmhr/ssxy/list">
                         <div class="form-group">
                             <label class="control-label" for="name">用户编号</label>
-                            <input type="text" class="form-control"
-                            >
+                            <input type="text" class="form-control" type="text"
+                                   name="userNo">
                         </div>
                         <div class="form-group">
                             <label class="control-label" for="name">用户名称</label>
-                            <input type="text" class="form-control"
-                            >
+                            <input type="text" class="form-control" type="text"
+                                   name="userName">
                         </div>
                         <div class="form-group">
                             <label class="control-label" for="name">银行代码</label>
-                            <input type="text" class="form-control"
-                            >
+                            <input type="text" class="form-control" type="text"
+                                   name="payerBank" >
                         </div>
                         <div class="form-group">
                             <label class="control-label" for="name">银行账号</label>
-                            <input type="text" class="form-control"
-                            >
+                            <input type="text" class="form-control" type="text"
+                                   name="payerAcc">
                         </div>
                         <div class="form-group">
                             <label class="control-label" for="name">银行户名</label>
-                            <input type="text" class="form-control"
-                            >
+                            <input type="text" class="form-control" type="text"
+                                   name="payerName">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="name">协议号</label>
+                            <input type="text" class="form-control" type="text"
+                                   name="protNo" >
                         </div>&nbsp;&nbsp;&nbsp;
                         <button type="submit" class="btn btn-primary">查询</button>
                     </form>
@@ -83,7 +88,33 @@
                 </div>
             </div>
         </div>
+        <#if Msg??>
+            <script>
+                if (confirm("${Msg}"))
+                {
+                    location.reload();
+                }
+            </script>
+        </#if>
+    </div>
+    <div class="modal fade" id="notice" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        提醒
+                    </h4>
+                </div>
+                <div id="noticebody" class="modal-body">
 
+                </div>
+                <div class="modal-footer">
+                    <button  onclick='location.href="/lmhr/ssxy/list"' type="button" class="btn btn-default" data-dismiss="modal">查看</button>
+
+                </div>
+            </div>
+        </div>
     </div>
     <ul class="pagination pull-right">
         <#if currentpage lte 1>
@@ -119,4 +150,30 @@
     </ul>
 </div>
 </body>
+<script>
+    var websocket=null;
+    if('WebSocket'in window){
+        websocket =new WebSocket('ws://localhost:8080/webSocket');
+    }else{
+        alert('该浏览器不支持Websocket');
+    }
+    websocket.onopen=function (event) {
+        console.log("建立连接");
+    }
+    websocket.onclose=function (event) {
+        console.log("连接关闭");
+    }
+    websocket.onmessage=function (event) {
+        //弹窗
+        var body = document.getElementById("noticebody");
+        body.innerText="请求"+event.data+"已有回应，请前往查看";
+        $("#notice").modal("show");
+    }
+    websocket.onerror=function (event) {
+        console.log("通信错误");
+    }
+    websocket.onbeforeunload=function (event) {
+        websocket.close();
+    }
+</script>
 </html>

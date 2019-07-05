@@ -26,10 +26,10 @@ public class DzMsg {
         List<DzMsg> dzList = new ArrayList<>();
         /* 1、解析文件头，获取请求时文件名*/
         String temp = breader.readLine();
-        DzMsg dzMsg=new DzMsg();
         while ((temp = breader.readLine()) != null) {
             String msgId = CFBSMsgUtil.getGBKStrCut(temp, 0, 16);// 交易序号
             String amount = CFBSMsgUtil.getGBKStrCut(temp, 258, 15);// 交易序号
+            DzMsg dzMsg=new DzMsg();
             dzMsg.setMsgId(msgId);
             dzMsg.setAmount(CFBSMsgUtil.removeLeftZero(amount));
             dzList.add(dzMsg);

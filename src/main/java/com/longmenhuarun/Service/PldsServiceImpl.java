@@ -160,7 +160,7 @@ import java.util.Map;
         try {
             //解密
             String decFileName = CFBSMsgUtil.fileDec(LOCALRECV_FILE_PATH, respEncFileName);
-            log.info("生成批量回应明文文件"+decFileName);
+            log.info("生成批量回应明文文件名"+decFileName);
             //组装对象
            PldsMsg pldsMsg =  PldsMsg.procRespPldsFile(LOCALRECV_FILE_PATH, decFileName);
            return pldsMsg;
@@ -307,7 +307,7 @@ import java.util.Map;
         }
             rspFileWriter.flush();
              rspFileWriter.close();
-             log.info("生成客户化回应文件"+customFileName);
+             log.info("生成客户化回应文件名"+customFileName);
     } catch (IOException e) {
         e.printStackTrace();
     }

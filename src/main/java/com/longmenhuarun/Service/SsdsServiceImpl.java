@@ -6,31 +6,27 @@ import com.longmenhuarun.Vo.SsdsVo;
 import com.longmenhuarun.common.Constant;
 import com.longmenhuarun.common.MsgUtil;
 import com.longmenhuarun.common.TimeUtil;
-import com.longmenhuarun.entity.InfoSsxy;
-import com.longmenhuarun.entity.InfoSxxy;
-import com.longmenhuarun.entity.TxnSsds;
-import com.longmenhuarun.entity.UiSsds;
+import com.longmenhuarun.entity.*;
 import com.longmenhuarun.enums.DZStatusEnum;
 import com.longmenhuarun.enums.JYStatusEnum;
 import com.longmenhuarun.model.DzMsg;
 import com.longmenhuarun.model.PldsMsg;
 import com.longmenhuarun.model.SsdsMsg;
-import com.longmenhuarun.repository.InfoSxxyRepository;
-import com.longmenhuarun.repository.RetcdRepository;
-import com.longmenhuarun.repository.TxnSsdsRepository;
-import com.longmenhuarun.repository.UiSsdsRepository;
+import com.longmenhuarun.repository.*;
 import com.sun.media.jfxmedia.logging.Logger;
 import com.yjt.cfbs.socket.netty.client.NettyClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.*;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,10 +45,13 @@ public class SsdsServiceImpl implements SsdsService {
     @Autowired
     private InfoSxxyRepository infoSxxyRepo;
     @Autowired
+    private BankRepository bankRepo;
+    @Autowired
     WebSocket webSocket;
     @Value("${LOCALRECV_FILE_PATH}")
     private String LOCALRECV_FILE_PATH;
-
+    @Value("${LOCAL_FILE_PATH}")
+    private String LOCAL_FILE_PATH;
     @Override
     public String createSsdsMsg(SsdsMsg ssdsMsg) {
         ssdsMsg.setEntrustDate(TimeUtil.getCurDateStr());
@@ -125,13 +124,23 @@ public class SsdsServiceImpl implements SsdsService {
         BeanUtils.copyProperties(txnSsds, uiSsds);
         uiSsds.setMsgId(txnSsds.getReqMsgId());
         uiSsdsRepo.save(uiSsds);
-        //推送消息
-        webSocket.sendMessage(ssdsMsg.getReqMsgNo());
     }
 
     @Override
     public Page<SsdsVo> findSsdsList(SsdsMsg ssdsMsg,Pageable pageable) {
-       // Page<UiSsds> UiSsdsPage = uiSsdsRepo.findAll(Specification<T> spec,pageable);
+        Page<UiSsds> UiSsdsPage;
+        if(ssdsMsg!=null) {
+            UiSsds temp = new UiSsds();
+            temp.setUserNo(ssdsMsg.getUserNo());
+            temp.setOutBank(ssdsMsg.getOutBank());
+            temp.setPayerAcc(ssdsMsg.getPayerAcc());
+            temp.setPayerName(ssdsMsg.getPayerName());
+            temp.setProtNo(ssdsMsg.getProtocolNo());
+            Example<UiSsds> example = Example.of(temp);
+             UiSsdsPage = uiSsdsRepo.findAll(example, pageable);
+        }else {
+             UiSsdsPage = uiSsdsRepo.findAll(pageable);
+        }
         List<SsdsVo> SsdsVoList = new ArrayList<>();
         for (UiSsds uiSsds : UiSsdsPage.getContent()) {
             SsdsVo ssdsVo = new SsdsVo();
@@ -145,7 +154,13 @@ public class SsdsServiceImpl implements SsdsService {
     }
 
     @Override
-    public void dz(String filename) {
+    public void genCustomFile(String decFileName) {
+
+    }
+
+
+    @Override
+    public String dz(String filename) {
         try {
             //解密
             String decFileName = CFBSMsgUtil.fileDec(LOCALRECV_FILE_PATH, filename);
@@ -166,17 +181,27 @@ public class SsdsServiceImpl implements SsdsService {
                 }
                 log.info("交易序号" + dz.getMsgId()+ "对账成功");
             }
+            return decFileName;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     @Override
     public String checkProtocol( SsdsMsg ssdsMsg) {
+        ssdsMsg.setOrgId(Constant.ORGID);
+        ssdsMsg.setTranType(Constant.TRANTYPE);
         InfoSxxy infoSxxy = infoSxxyRepo.checkProt(ssdsMsg.getOrgId(), ssdsMsg.getTranType(), ssdsMsg.getUserNo());
         if(infoSxxy!=null) {
             return infoSxxy.getProtNo();
         }
         return null;
+    }
+
+    @Override
+    public boolean checkBankId(String bankId) {
+        if(bankRepo.findById(bankId).orElse(null)!=null) return true;
+        return false;
     }
 }

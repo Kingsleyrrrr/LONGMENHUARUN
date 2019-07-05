@@ -12,8 +12,10 @@ public interface SsdsService {
     void insertDB(String ssReqMsg);
     void updateDB(SsdsMsg ssdsMsg);
     Page<SsdsVo> findSsdsList(SsdsMsg ssdsMsg,Pageable pageable);
-
-    void dz(String filename);
+    void  genCustomFile(String decFileName);
+    String dz(String filename);
 
     String checkProtocol(SsdsMsg ssdsMsg);
+
+    boolean checkBankId(String bankId);
 }
